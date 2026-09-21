@@ -2,18 +2,6 @@
 
 This repository provides domain adaptation training code for remote sensing semantic segmentation on the [LoveDA](https://github.com/Junjue-Wang/LoveDA) dataset. Starting from labeled source-domain data, the code supports adversarial alignment with unlabeled target-domain data and can incorporate a small set of labeled target-domain samples in the third stage for semi-supervised domain adaptation (SSDA).
 
-## Features
-
-- Training, validation, and full-image inference for the seven LoveDA semantic classes.
-- Support for source-only supervised learning, unsupervised domain adaptation (UDA), and SSDA with a small labeled target-domain set.
-- Three-stage training:
-  - **S1**: supervised training on the source domain.
-  - **S2**: domain-adversarial alignment with loss-weight warm-up.
-  - **S3**: class-conditional alignment activated after the validation metric stabilizes, with labeled target-domain samples available as semantic anchors.
-- Support for cross-entropy, Dice, Focal Tversky, branch supervision, and gate regularization losses.
-- Separate best checkpoints based on mIoU, mF1, and OA, with optional automatic mask prediction after training.
-- The current training entry point loads complete source- and target-domain images rather than sampled patches.
-
 ## Project Structure
 
 ```text
