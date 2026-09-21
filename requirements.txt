@@ -1,0 +1,6 @@
+# Install a CUDA-compatible PyTorch build first when GPU acceleration is required.
+numpy>=1.20
+torch>=1.10
+imageio>=2.9
+tqdm>=4.60
+rasterio>=1.2
