@@ -1,80 +1,80 @@
 # LoveDA SSDA Semantic Segmentation
 
-本项目提供一套面向 [LoveDA](https://github.com/Junjue-Wang/LoveDA) 遥感语义分割数据集的域适应训练代码。代码以源域有标签数据为基础，支持无标签目标域对抗对齐，并可在第三阶段加入少量目标域有标签样本进行半监督域适应（SSDA）。
+This repository provides domain adaptation training code for remote sensing semantic segmentation on the [LoveDA](https://github.com/Junjue-Wang/LoveDA) dataset. Starting from labeled source-domain data, the code supports adversarial alignment with unlabeled target-domain data and can incorporate a small set of labeled target-domain samples in the third stage for semi-supervised domain adaptation (SSDA).
 
-## 主要功能
+## Features
 
-- 七类 LoveDA 语义分割训练、验证和整图预测。
-- 支持源域监督学习、无监督域适应（UDA）和带少量目标域标签的 SSDA。
-- 分阶段训练：
-  - **S1**：源域监督训练。
-  - **S2**：加入域对抗对齐，并支持权重 warm-up。
-  - **S3**：在指标稳定后启用类别条件对齐，可使用目标域有标签样本作为语义锚点。
-- 支持交叉熵、Dice、Focal Tversky、分支监督和门控正则等损失项。
-- 按 mIoU、mF1 和 OA 分别保存最佳模型，并可在训练结束后自动生成预测掩膜。
-- 当前训练入口按整幅影像读取源域和目标域数据。
+- Training, validation, and full-image inference for the seven LoveDA semantic classes.
+- Support for source-only supervised learning, unsupervised domain adaptation (UDA), and SSDA with a small labeled target-domain set.
+- Three-stage training:
+  - **S1**: supervised training on the source domain.
+  - **S2**: domain-adversarial alignment with loss-weight warm-up.
+  - **S3**: class-conditional alignment activated after the validation metric stabilizes, with labeled target-domain samples available as semantic anchors.
+- Support for cross-entropy, Dice, Focal Tversky, branch supervision, and gate regularization losses.
+- Separate best checkpoints based on mIoU, mF1, and OA, with optional automatic mask prediction after training.
+- The current training entry point loads complete source- and target-domain images rather than sampled patches.
 
-## 项目结构
+## Project Structure
 
 ```text
 .
-├── run_da.py            # 训练入口
+├── run_da.py            # Training entry point
 ├── config/
-│   └── default.py       # 数据路径、模型、训练和评估配置
+│   └── default.py       # Data paths and model, training, and evaluation settings
 ├── common/
-│   └── seed.py          # 随机种子与可复现设置
+│   └── seed.py          # Random seeds and reproducibility settings
 ├── data/
-│   ├── datasets.py      # 数据集定义
-│   └── loader.py        # 数据读取、采样和 DataLoader 构建
+│   ├── datasets.py      # Dataset definitions
+│   └── loader.py        # Data reading, sampling, and DataLoader construction
 ├── models/
-│   ├── feature.py       # 分割网络、注意力与域门控结构
-│   └── domain.py        # 域分类器、随机多线性映射和梯度反转
+│   ├── feature.py       # Segmentation network, attention modules, and domain gates
+│   └── domain.py        # Domain classifier, randomized multilinear mapping, and gradient reversal
 ├── train/
-│   ├── loop.py          # S1/S2/S3 训练、验证、保存和预测流程
-│   └── utils.py         # 模型参数初始化
+│   ├── loop.py          # S1/S2/S3 training, validation, checkpointing, and inference
+│   └── utils.py         # Model parameter initialization
 ├── eval/
-│   ├── metrics.py       # 混淆矩阵、mIoU、mF1、OA 等指标
-│   └── predict.py       # 整图预测与掩膜保存
+│   ├── metrics.py       # Confusion matrix, mIoU, mF1, OA, and related metrics
+│   └── predict.py       # Full-image inference and mask export
 └── requirements.txt
 ```
 
-## 环境要求
+## Requirements
 
-- Python 3.8 或更高版本
-- 推荐使用支持 CUDA 的 NVIDIA GPU
-- PyTorch 的 CUDA 构建需要与本机驱动和 CUDA 环境匹配
+- Python 3.8 or later
+- An NVIDIA GPU with CUDA support is recommended
+- The PyTorch CUDA build must be compatible with the installed GPU driver and CUDA environment
 
-建议先按照 [PyTorch 官方安装说明](https://pytorch.org/get-started/locally/) 安装合适的 PyTorch 版本，再安装其余依赖：
+We recommend installing the appropriate PyTorch build by following the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) before installing the remaining dependencies:
 
 ```bash
 python -m venv .venv
 ```
 
-Linux/macOS：
+Linux/macOS:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Windows PowerShell：
+Windows PowerShell:
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-安装依赖：
+Install the dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-如果需要指定 CUDA 版本，请先使用 PyTorch 官方提供的安装命令安装 `torch`，然后再执行上面的命令。
+If a specific CUDA version is required, install `torch` with the command provided by the PyTorch website first, and then run the command above.
 
-## 数据准备
+## Data Preparation
 
-数据集不会随本仓库发布。请自行获取 LoveDA 数据，进行域适应特定数据配置，并遵守数据集的许可和使用条款。
+The dataset is not distributed with this repository. Download LoveDA separately, prepare the source and target domains for your domain adaptation setting, and comply with the dataset license and terms of use.
 
-推荐的数据目录结构如下：
+The recommended directory structure is:
 
 ```text
 datasets/LoveDA/
@@ -100,9 +100,9 @@ datasets/LoveDA/
             └── masks/
 ```
 
-## 配置
+## Configuration
 
-训练前请编辑 `config/default.py`，至少修改以下路径：
+Before training, edit `config/default.py` and update at least the following paths:
 
 ```python
 CFG["paths"]["checkpoints_dir"]
@@ -119,30 +119,30 @@ CFG["data"]["target_test"]["image_dir"]
 CFG["data"]["target_test"]["mask_dir"]
 ```
 
-默认配置使用相对于项目根目录的 `datasets/LoveDA/` 和 `outputs/`。请在项目根目录运行训练命令，或按实际数据位置修改这些相对路径。
+The default configuration uses `datasets/LoveDA/` and `outputs/` relative to the project root. Run the training command from the project root, or adjust these paths to match your data location.
 
-若只进行源域监督训练，可设置：
+For source-only supervised training, use:
 
 ```python
 CFG["train"]["enable_uda"] = False
 CFG["train"]["enable_s3"] = False
 ```
 
-若没有目标域有标签样本，可关闭 S3，或将 `s3_align_mode` 改为 `pseudo` 并根据数据调整伪标签阈值。
+If no labeled target-domain samples are available, disable S3 or set `s3_align_mode` to `pseudo` and adjust the pseudo-label confidence thresholds for your data.
 
-## 运行训练
+## Training
 
-在项目根目录执行：
+Run the following command from the project root:
 
 ```bash
 python run_da.py
 ```
 
-训练日志会输出当前阶段、各损失项、验证指标、伪标签覆盖率和有效更新次数。
+The training log reports the current stage, individual loss terms, validation metrics, pseudo-label coverage, and the number of valid optimization updates.
 
-## 输出
+## Outputs
 
-默认模型输出目录为 `outputs/checkpoints/`：
+By default, model checkpoints are written to `outputs/checkpoints/`:
 
 ```text
 outputs/checkpoints/
